@@ -1,0 +1,15 @@
+# Connect to Online Microsoft O365 Powershell
+Import-Module MsOnline;
+# Use O365 Admin credentials to connect
+$Username = "user@name.com"
+$Password = ConvertTo-SecureString ExamplePassword1 -AsPlainText -Force
+$O365Cred = New-Object System.Management.Automation.PSCredential $Username, $Password
+Connect-MsolService –Credential $O365Cred;
+# Wait 10 seconds for Powershell to successfully connect to O365 before running commands
+Start-Sleep -s 10;
+# Set Country Code to AU for all users for who this is not set
+Get-MsolUser -All | where-object {$_.usagelocation -eq $null} | set-msoluser -UsageLocation AU 
+# Wait 300 seconds for Country Code to complete
+Start-Sleep -s 300;
+# License all unlicensed users with Standard Faculty License
+$AllUn = Get-MsolUser -All -UnlicensedUsersOnly -Synchronized; $AllUn | foreach {Set-MsolUserLicense -UserPrincipalName $_.UserPrincipalName –AddLicenses "ExampleLicence:STANDARDWOFFPACK_IW_FACULTY"}
